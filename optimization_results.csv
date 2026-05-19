@@ -1,0 +1,11 @@
+store_id,store_name,city,max_capacity,total_orders,delayed_orders,delay_rate_pct,active_riders,rider_payout_cost,total_financial_loss_inr,projected_monthly_loss_inr,daily_demand,rider_capacity,shortfall,avg_payout,optimal_riders,unmet_demand,delta_riders,new_payout_cost,old_late_cost,new_late_cost,cost_saving,monthly_saving
+DS003,Blinkit - Thatipur,Gwalior,300,10,1,10.0,4,146.0,158.0,4725.0,83,40,43,36.5,8,3,4,2920.0,3950.0,600,3350.0,100500.0
+DS006,Blinkit - Connaught Pl,Delhi,450,10,5,50.0,4,166.0,759.0,22770.0,83,40,43,41.5,1,73,-3,415.0,18975.0,14600,4375.0,131250.0
+DS007,Blinkit - Saket,Delhi,400,10,5,50.0,3,118.0,820.0,24600.0,83,30,53,39.33,1,73,-2,393.0,20500.0,14600,5900.0,177000.0
+DS009,Blinkit - Rohini,Delhi,420,10,5,50.0,3,118.0,669.0,20055.0,83,30,53,39.33,4,43,1,1573.0,16725.0,8600,8125.0,243750.0
+DS005,Blinkit - Padav,Gwalior,250,10,5,50.0,2,70.0,567.0,16995.0,83,20,63,35.0,8,3,6,2800.0,14175.0,600,13575.0,407250.0
+DS001,Blinkit - Lashkar,Gwalior,280,10,6,60.0,3,108.0,835.0,25058.0,83,30,53,36.0,8,3,5,2880.0,20875.0,600,20275.0,608250.0
+DS008,Blinkit - Dwarka,Delhi,380,10,7,70.0,3,118.0,964.0,28905.0,83,30,53,39.33,1,73,-2,393.0,24100.0,14600,9500.0,285000.0
+DS010,Blinkit - Lajpat Nagar,Delhi,350,10,7,70.0,4,153.0,819.0,24570.0,83,40,43,38.25,8,3,4,3060.0,20475.0,600,19875.0,596250.0
+DS004,Blinkit - Hazira,Gwalior,190,10,9,90.0,2,67.0,1125.0,33750.0,83,20,63,33.5,8,3,6,2680.0,28125.0,600,27525.0,825750.0
+DS002,Blinkit - Morar,Gwalior,220,10,9,90.0,2,67.0,1165.0,34958.0,83,20,63,33.5,8,3,6,2680.0,29125.0,600,28525.0,855750.0

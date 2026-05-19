@@ -1,0 +1,11 @@
+store_id,store_name,city,zone,total_orders,delayed_orders,delay_rate_pct,avg_delivery_min,total_gmv_inr,health_status
+DS002,Blinkit - Morar,Gwalior,East,10,9,90.0,29.6,5580.0,CRITICAL
+DS004,Blinkit - Hazira,Gwalior,North,10,9,90.0,24.1,6040.0,CRITICAL
+DS008,Blinkit - Dwarka,Delhi,West,10,7,70.0,18.5,6080.0,CRITICAL
+DS010,Blinkit - Lajpat Nagar,Delhi,East,10,7,70.0,18.4,6500.0,CRITICAL
+DS001,Blinkit - Lashkar,Gwalior,Central,10,6,60.0,18.7,5440.0,CRITICAL
+DS005,Blinkit - Padav,Gwalior,South,10,5,50.0,16.5,5210.0,CRITICAL
+DS006,Blinkit - Connaught Pl,Delhi,Central,10,5,50.0,16.6,7340.0,CRITICAL
+DS007,Blinkit - Saket,Delhi,South,10,5,50.0,16.8,6750.0,CRITICAL
+DS009,Blinkit - Rohini,Delhi,North,10,5,50.0,16.5,5880.0,CRITICAL
+DS003,Blinkit - Thatipur,Gwalior,West,10,1,10.0,11.7,5570.0,HEALTHY

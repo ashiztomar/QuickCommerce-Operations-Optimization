@@ -1,0 +1,11 @@
+store_id,store_name,city,total_gmv_inr,gmv_at_risk_inr,refund_risk_inr,coupon_cost_inr,total_financial_loss_inr,delay_rate_pct,projected_monthly_loss_inr
+DS002,Blinkit - Morar,Gwalior,5580.0,5435.0,815.0,350.0,1165.0,90.0,34958.0
+DS004,Blinkit - Hazira,Gwalior,6040.0,5500.0,825.0,300.0,1125.0,90.0,33750.0
+DS008,Blinkit - Dwarka,Delhi,6080.0,5090.0,764.0,200.0,964.0,70.0,28905.0
+DS001,Blinkit - Lashkar,Gwalior,5440.0,4235.0,635.0,200.0,835.0,60.0,25058.0
+DS007,Blinkit - Saket,Delhi,6750.0,4800.0,720.0,100.0,820.0,50.0,24600.0
+DS010,Blinkit - Lajpat Nagar,Delhi,6500.0,4460.0,669.0,150.0,819.0,70.0,24570.0
+DS006,Blinkit - Connaught Pl,Delhi,7340.0,4060.0,609.0,150.0,759.0,50.0,22770.0
+DS009,Blinkit - Rohini,Delhi,5880.0,3790.0,569.0,100.0,669.0,50.0,20055.0
+DS005,Blinkit - Padav,Gwalior,5210.0,3110.0,467.0,100.0,567.0,50.0,16995.0
+DS003,Blinkit - Thatipur,Gwalior,5570.0,1050.0,158.0,0.0,158.0,10.0,4725.0

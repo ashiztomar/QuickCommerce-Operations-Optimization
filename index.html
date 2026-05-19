@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ QuickCommerce Operations Optimization Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:#F4F6F9;color:#2C3E50;font-size:13px;line-height:1.45}
+  header{background:linear-gradient(135deg,#1F4E78 0%,#2E86C1 60%,#3498DB 100%);color:#fff;padding:22px 40px;box-shadow:0 2px 10px rgba(0,0,0,.12);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
+  header h1{font-size:24px;margin-bottom:4px;letter-spacing:.3px;position:relative;z-index:1}
+  header p{font-size:13px;opacity:.92;position:relative;z-index:1}
+  .header-pills{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;position:relative;z-index:1}
+  .pill{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .pill.live::before{content:"●";color:#2ECC71;margin-right:5px;animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .tabs{display:flex;gap:6px;background:#fff;padding:10px 40px;border-bottom:2px solid #E5E8E8;box-shadow:0 1px 6px rgba(0,0,0,.05);position:sticky;top:0;z-index:50}
+  .tab{padding:10px 22px;border:none;background:#EAF2F8;color:#1F4E78;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .2s;font-size:13px}
+  .tab:hover{background:#D4E6F1}
+  .tab.active{background:#1F4E78;color:#fff;box-shadow:0 -2px 6px rgba(31,78,120,.25)}
+  .page{display:none;padding:22px 40px 40px}
+  .page.active{display:block;animation:fadeIn .3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .kpi{background:#fff;padding:16px 18px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);border-left:4px solid #1F4E78;position:relative;overflow:hidden;transition:transform .2s}
+  .kpi:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.1)}
+  .kpi.danger{border-left-color:#C00000}
+  .kpi.success{border-left-color:#00B050}
+  .kpi.warn{border-left-color:#E67E22}
+  .kpi.info{border-left-color:#2E86C1}
+  .kpi .icon-bg{position:absolute;right:12px;top:10px;font-size:32px;opacity:.08}
+  .kpi .label{font-size:11px;color:#7F8C8D;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
+  .kpi .value{font-size:24px;font-weight:700;color:#2C3E50;line-height:1.1}
+  .kpi .sub{font-size:11px;color:#95A5A6;margin-top:5px}
+  .kpi .trend{font-size:11px;font-weight:700;margin-top:5px}
+  .trend.up{color:#C00000}
+  .trend.down{color:#00B050}
+  .row{display:grid;gap:14px;margin-bottom:14px}
+  .row.two{grid-template-columns:1fr 1fr}
+  .row.three{grid-template-columns:repeat(3,1fr)}
+  .row.one{grid-template-columns:1fr}
+  .row.l-two{grid-template-columns:1.4fr 1fr}
+  .row.r-two{grid-template-columns:1fr 1.4fr}
+  .card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.07);position:relative}
+  .card h3{font-size:14px;color:#1F4E78;margin-bottom:4px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .card .subtitle{font-size:11px;color:#95A5A6;margin-bottom:12px}
+  .card-tag{position:absolute;right:14px;top:14px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:#EAF2F8;color:#1F4E78;text-transform:uppercase;letter-spacing:.5px}
+  .alert{background:#FDF2E9;border-left:4px solid #E67E22;padding:12px 16px;border-radius:6px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px}
+  .alert.danger{background:#FADBD8;border-left-color:#C00000}
+  .alert.success{background:#D5F5E3;border-left-color:#00B050}
+  .alert .ico{font-size:20px}
+  footer{text-align:center;padding:18px;color:#7F8C8D;font-size:12px;border-top:1px solid #E5E8E8;background:#fff}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:#1F4E78;color:#fff;padding:9px 10px;text-align:left;font-weight:600;letter-spacing:.3px;position:sticky;top:0}
+  td{padding:9px 10px;border-bottom:1px solid #E8EDF1}
+  tr:hover{background:#F8F9F9}
+  .status-critical{color:#C00000;font-weight:700}
+  .status-warning{color:#E67E22;font-weight:700}
+  .status-healthy{color:#00B050;font-weight:700}
+  .status-avg{color:#2E86C1;font-weight:700}
+  .chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.3px}
+  .chip.red{background:#FADBD8;color:#922B21}
+  .chip.amber{background:#FCF3CF;color:#9A7D0A}
+  .chip.green{background:#D5F5E3;color:#1E8449}
+  .chip.blue{background:#D6EAF8;color:#1F4E78}
+  .insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+  .insight{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.5}
+  .insight b{display:block;margin-bottom:4px;font-size:13px}
+  .insight.red{background:#FDF2F0;border-left:3px solid #C00000;color:#641E16}
+  .insight.amber{background:#FEF9E7;border-left:3px solid #E67E22;color:#7E5109}
+  .insight.green{background:#E8F8F0;border-left:3px solid #00B050;color:#145A32}
+  .chart-wrap{position:relative;width:100%}
+  .chart-wrap.h280{height:280px}
+  .chart-wrap.h320{height:320px}
+  .chart-wrap.h360{height:360px}
+  .chart-wrap.h400{height:400px}
+  .chart-wrap.h420{height:420px}
+  #mapDiv{height:380px;width:100%;border-radius:8px;border:1px solid #E5E8E8}
+  .map-legend{display:flex;gap:14px;margin-top:8px;font-size:11px;color:#5D6D7E}
+  .map-legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .savings-table{margin-top:6px}
+  .savings-table td{padding:7px 8px}
+  .bar-container{background:#EAF2F8;border-radius:4px;height:14px;position:relative;overflow:hidden;min-width:120px}
+  .bar-fill{height:100%;background:linear-gradient(90deg,#27AE60,#2ECC71);border-radius:4px;transition:width .8s ease}
+  .total-pill{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:linear-gradient(135deg,#1F4E78,#2E86C1);color:#fff;border-radius:10px;margin-top:14px}
+  .total-pill .tlabel{font-size:12px;text-transform:uppercase;letter-spacing:.5px;opacity:.85}
+  .total-pill .tvalue{font-size:24px;font-weight:700}
+  .savings-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .savings-summary .s-card{background:#F8F9FB;padding:12px;border-radius:8px;border:1px solid #E5E8E8;text-align:center}
+  .savings-summary .s-card .lbl{font-size:11px;color:#7F8C8D;text-transform:uppercase;letter-spacing:.4px}
+  .savings-summary .s-card .val{font-size:18px;font-weight:700;color:#1F4E78;margin-top:4px}
+  .savings-summary .s-card.green{background:#E8F8F0;border-color:#A9DFBF}
+  .savings-summary .s-card.green .val{color:#1E8449}
+  .recommend{background:#F4F6F9;padding:14px;border-radius:8px;margin-top:8px;font-size:12px;border:1px dashed #B0BEC5}
+  .recommend b{color:#1F4E78}
+  .legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#5D6D7E;margin-top:6px}
+  .legend-row .sw{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .strategy-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px}
+  .strategy{padding:14px;border-radius:8px;border:1px solid #E5E8E8;background:#FAFBFC}
+  .strategy .stitle{font-size:13px;font-weight:700;color:#1F4E78;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .strategy ul{margin-left:18px;font-size:12px;color:#5D6D7E}
+  .strategy ul li{margin-bottom:3px}
+  .footer-stats{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin-bottom:6px;font-size:11px}
+  .footer-stats span b{color:#1F4E78}
+  @media (max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr)}.row.two,.row.l-two,.row.r-two,.row.three{grid-template-columns:1fr}.savings-summary,.insight-grid,.strategy-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ QuickCommerce Operations Optimization Dashboard</h1>
+  <p>Blinkit-Style Dark Store Network · 10 Stores · Delhi + Gwalior · Real-time 15-min SLA Monitoring</p>
+  <div class="header-pills">
+    <span class="pill live">LIVE FEED</span>
+    <span class="pill">SQL → Excel Solver → BI</span>
+    <span class="pill">Linear Programming · CBC Engine</span>
+    <span class="pill">Last refresh: just now</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" onclick="show('p1',this)">📊 Page 1 — Operational Health</button>
+  <button class="tab" onclick="show('p2',this)">💰 Page 2 — Financial Impact</button>
+  <button class="tab" onclick="show('p3',this)">📋 Page 3 — Store Scorecard</button>
+</nav>
+
+<!-- ============================ PAGE 1 ============================ -->
+<section id="p1" class="page active">
+  <div class="alert danger">
+    <span class="ico">🚨</span>
+    <div><b>9 of 10 stores</b> currently violate the 15-minute SLA. Top offenders: <b>Morar (90%)</b>, <b>Hazira (90%)</b>, <b>Dwarka (70%)</b>, <b>Lajpat Nagar (70%)</b>. Immediate rider re-allocation required. <b>Projected loss this month: ₹2.36 L</b> if no action is taken.</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi danger"><div class="icon-bg">📉</div><div class="label">Avg Delay Rate</div><div class="value">59.0%</div><div class="sub">across 10 stores · 100 orders</div><div class="trend up">▲ 44pp vs 15% target</div></div>
+    <div class="kpi warn"><div class="icon-bg">⏱️</div><div class="label">Avg Delivery Time</div><div class="value">18.7 min</div><div class="sub">target ≤ 15 min</div><div class="trend up">▲ 3.7 min vs SLA</div></div>
+    <div class="kpi success"><div class="icon-bg">🏆</div><div class="label">Best Performer</div><div class="value">DS003 · Thatipur</div><div class="sub">11.7 min · ⭐ 4.67</div><div class="trend down">▼ 10% delay rate</div></div>
+    <div class="kpi danger"><div class="icon-bg">⚠️</div><div class="label">Worst Performer</div><div class="value">DS002 · Morar</div><div class="sub">29.6 min · ⭐ 3.88</div><div class="trend up">▲ 90% delay rate</div></div>
+  </div>
+
+  <div class="row l-two">
+    <div class="card">
+      <span class="card-tag">Geo View</span>
+      <h3>🗺️ Dark Store Network — Delay Heatmap</h3>
+      <p class="subtitle">Geographic view · Delhi (5 stores) + Gwalior (5 stores) · Bubble size = order volume · Color = delay %</p>
+      <div id="mapDiv"></div>
+      <div class="map-legend">
+        <span><span class="dot" style="background:#00B050"></span>Healthy (&lt;20%)</span>
+        <span><span class="dot" style="background:#E67E22"></span>Warning (20–50%)</span>
+        <span><span class="dot" style="background:#C00000"></span>Critical (&gt;50%)</span>
+      </div>
+      <div class="insight-grid">
+        <div class="insight red"><b>🔴 Gwalior cluster</b>5 of 5 stores critical — Morar &amp; Hazira at 90% delay. Avg delivery 20.1 min.</div>
+        <div class="insight amber"><b>🟠 Delhi cluster</b>4 of 5 stores critical — Dwarka &amp; Lajpat Nagar lead the misses (70%).</div>
+        <div class="insight green"><b>🟢 Bright spot</b>Thatipur (Gwalior West) — only 10% delay, 11.7 min avg, ⭐ 4.67.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag">SLA Breach</span>
+      <h3>📉 Delay Rate by Dark Store</h3>
+      <p class="subtitle">% orders &gt; 15-min SLA · sorted worst → best</p>
+      <div class="chart-wrap h400"><canvas id="delayBar"></canvas></div>
+      <div class="legend-row">
+        <span><span class="sw" style="background:#C00000"></span>Critical &gt; 40%</span>
+        <span><span class="sw" style="background:#E67E22"></span>Warning 20–40%</span>
+        <span><span class="sw" style="background:#00B050"></span>Healthy &lt; 20%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row two">
+    <div class="card">
+      <span class="card-tag">Latency</span>
+      <h3>⏱️ Avg Delivery Time per Store</h3>
+      <p class="subtitle">vs 15-min SLA red line · Minutes per order</p>
+      <div class="chart-wrap h320"><canvas id="avgDelivery"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="card-tag">Peak Stress</span>
+      <h3>🕐 Hourly Delay Pattern</h3>
+      <p class="subtitle">Peak stress windows (08h–21h) · darker = higher delay %</p>
+      <div class="chart-wrap h320"><canvas id="hourlyHeat"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row two">
+    <div class="card">
+      <span class="card-tag">Workforce</span>
+      <h3>👥 Rider Attendance &amp; Capacity Gap</h3>
+      <p class="subtitle">Active / Total · Capacity utilization %</p>
+      <div class="chart-wrap h360"><canvas id="riderCap"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="card-tag">Correlation</span>
+      <h3>⭐ Rider Quality vs Delay Rate</h3>
+      <p class="subtitle">Avg rider rating (x) vs store delay % (y) · bubble = orders/day</p>
+      <div class="chart-wrap h360"><canvas id="qualityScatter"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PAGE 2 ============================ -->
+<section id="p2" class="page">
+  <div class="alert success">
+    <span class="ico">💸</span>
+    <div>LP optimization unlocks <b>₹1,41,025/day</b> savings (<b>71.6% cost reduction</b>). Move <b>+31 riders</b> into the 7 starved stores; pull <b>−7 riders</b> from Delhi over-staffed locations. Payback period: <b>immediate</b>.</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi danger"><div class="icon-bg">💸</div><div class="label">Daily Late Cost — Before</div><div class="value">₹1,97,025</div><div class="sub">refund + coupon penalties</div><div class="trend up">▲ baseline</div></div>
+    <div class="kpi success"><div class="icon-bg">✅</div><div class="label">Daily Late Cost — After LP</div><div class="value">₹56,000</div><div class="sub">post optimization</div><div class="trend down">▼ 71.6% reduction</div></div>
+    <div class="kpi info"><div class="icon-bg">📈</div><div class="label">Monthly Savings (30d)</div><div class="value">₹42.31 L</div><div class="sub">₹42,30,750</div><div class="trend down">▼ recurring</div></div>
+    <div class="kpi info"><div class="icon-bg">🚀</div><div class="label">Annual Projection (365d)</div><div class="value">₹5.15 Cr</div><div class="sub">₹5,14,74,125</div><div class="trend down">▼ at scale</div></div>
+  </div>
+
+  <div class="row two">
+    <div class="card">
+      <span class="card-tag">Cost Compare</span>
+      <h3>💸 Daily Late Cost — Before vs After</h3>
+      <p class="subtitle">Per-store comparison (₹) · refund @ 15% + ₹50 coupon &gt; 20 min</p>
+      <div class="chart-wrap h400"><canvas id="costBefAft"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="card-tag">LP Solver Output</span>
+      <h3>🏍️ Rider Allocation — Current vs LP-Optimal</h3>
+      <p class="subtitle">Per-store headcount &amp; delta · CBC simplex result</p>
+      <div class="chart-wrap h400"><canvas id="riderAlloc"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row r-two">
+    <div class="card">
+      <span class="card-tag">Top Wins</span>
+      <h3>🏆 Daily Savings by Store</h3>
+      <p class="subtitle">Total: ₹1,41,025 / day · sorted by impact</p>
+      <div class="chart-wrap h400"><canvas id="savingsBar"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="card-tag">Breakdown</span>
+      <h3>📊 Savings Breakdown</h3>
+      <p class="subtitle">Ranked by daily impact (₹)</p>
+      <table class="savings-table">
+        <thead><tr><th>Store</th><th style="width:42%">Savings Bar</th><th style="text-align:right">Daily (₹)</th></tr></thead>
+        <tbody id="savingsTbl"></tbody>
+      </table>
+      <div class="total-pill">
+        <div><div class="tlabel">Total Daily Savings</div><div class="tvalue">₹1,41,025 / day</div></div>
+        <div style="font-size:34px">💰</div>
+      </div>
+      <div class="savings-summary">
+        <div class="s-card"><div class="lbl">Per Week (×7)</div><div class="val">₹9,87,175</div></div>
+        <div class="s-card green"><div class="lbl">Per Month (×30)</div><div class="val">₹42,30,750</div></div>
+        <div class="s-card"><div class="lbl">Per Year (×365)</div><div class="val">₹5,14,74,125</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row one">
+    <div class="card">
+      <span class="card-tag">GMV Exposure</span>
+      <h3>⚠️ Revenue at Risk per Store</h3>
+      <p class="subtitle">GMV exposed to refund + coupon (₹) · stacked = total financial loss</p>
+      <div class="chart-wrap h360"><canvas id="revRisk"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row two">
+    <div class="card">
+      <h3>🎯 Recommended Strategy</h3>
+      <p class="subtitle">From the LP solver + heuristic overrides</p>
+      <div class="strategy-grid">
+        <div class="strategy">
+          <div class="stitle">⬆️ Reinforce (+5 riders)</div>
+          <ul>
+            <li>DS002 Morar — +6 riders → 8 active</li>
+            <li>DS004 Hazira — +6 riders → 8 active</li>
+            <li>DS001 Lashkar — +5 riders → 8 active</li>
+            <li>DS005 Padav — +6 riders → 8 active</li>
+            <li>DS010 Lajpat Nagar — +4 riders → 8 active</li>
+          </ul>
+        </div>
+        <div class="strategy">
+          <div class="stitle">⬇️ Right-size (−riders)</div>
+          <ul>
+            <li>DS006 Connaught Pl — −3 riders → 1 active</li>
+            <li>DS007 Saket — −2 riders → 1 active</li>
+            <li>DS008 Dwarka — −2 riders → 1 active</li>
+            <li>DS009 Rohini — +1 net (rebalance)</li>
+            <li>DS003 Thatipur — +4 riders (margin protection)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="recommend">
+        <b>💡 Quick-win:</b> Re-deploying 7 riders out of Connaught Place / Saket / Dwarka into Morar &amp; Hazira alone unlocks <b>₹56,050/day</b> — that's <b>40% of the total opportunity</b> with zero net hiring.
+      </div>
+    </div>
+    <div class="card">
+      <h3>📐 Linear Programming Formulation</h3>
+      <p class="subtitle">Excel Solver · Simplex LP · CBC engine (PuLP)</p>
+      <div style="background:#1F2D3D;color:#F2F4F8;padding:14px 16px;border-radius:8px;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.7">
+        <div style="color:#F39C12">// Decision variable</div>
+        <div>x<sub>i</sub> = riders allocated to store i &nbsp;(integer ≥ 1)</div>
+        <br>
+        <div style="color:#F39C12">// Objective</div>
+        <div>min &nbsp;Σ (payout<sub>i</sub> × 10 × x<sub>i</sub>) + ₹200 × Σ unmet_demand<sub>i</sub></div>
+        <br>
+        <div style="color:#F39C12">// Subject to</div>
+        <div>Σ x<sub>i</sub> &nbsp;≤ &nbsp;40 &nbsp;(total rider pool)</div>
+        <div>10·x<sub>i</sub> + slack<sub>i</sub> &nbsp;≥ &nbsp;demand<sub>i</sub></div>
+        <div>10·x<sub>i</sub> &nbsp;≤ &nbsp;capacity<sub>i</sub></div>
+        <div>x<sub>i</sub> ∈ ℤ⁺</div>
+      </div>
+      <div class="recommend"><b>✅ Solver Status:</b> Optimal · 10 vars · 30 constraints · solved in 0.18s · objective ₹56,000/day</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PAGE 3 ============================ -->
+<section id="p3" class="page">
+  <div class="alert">
+    <span class="ico">📋</span>
+    <div>Executive scorecard — composite KPI = <b>50% punctuality + 30% rider quality + 20% cost efficiency</b>. 8 stores flagged <b>NEEDS INTERVENTION</b>, only 2 stores currently meet the operational bar.</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi info"><div class="icon-bg">🏪</div><div class="label">Total Stores</div><div class="value">10</div><div class="sub">5 Delhi + 5 Gwalior</div></div>
+    <div class="kpi danger"><div class="icon-bg">🚩</div><div class="label">Needs Intervention</div><div class="value">9</div><div class="sub">90% of network</div></div>
+    <div class="kpi warn"><div class="icon-bg">📊</div><div class="label">Avg Ops Score</div><div class="value">46.5 / 100</div><div class="sub">composite weighted KPI</div></div>
+    <div class="kpi success"><div class="icon-bg">⭐</div><div class="label">Avg Rider Rating</div><div class="value">4.34 / 5</div><div class="sub">40 riders surveyed</div></div>
+  </div>
+
+  <div class="row two">
+    <div class="card">
+      <h3>🏅 Ops Performance Score by Store</h3>
+      <p class="subtitle">Composite KPI · sorted best → worst</p>
+      <div class="chart-wrap h360"><canvas id="opsScore"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>💰 Cost per Order — by Store</h3>
+      <p class="subtitle">Operational cost ÷ daily orders (₹) · target ≤ ₹5,000</p>
+      <div class="chart-wrap h360"><canvas id="costPerOrder"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row one">
+    <div class="card">
+      <h3>📋 Full Executive Scorecard</h3>
+      <p class="subtitle">All 10 dark stores · sorted by Ops Performance Score</p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Store</th><th>City · Zone</th><th>Orders</th><th>Delay %</th><th>Avg Min</th>
+              <th>Active / Total Riders</th><th>Cap. Util %</th><th>Cost / Order</th><th>⭐ Rating</th>
+              <th>Score</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="scorecardTbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="row two">
+    <div class="card">
+      <h3>🎯 Capacity Utilization vs Delay %</h3>
+      <p class="subtitle">Each bubble = a store · size = max capacity</p>
+      <div class="chart-wrap h360"><canvas id="capDelay"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>🏙️ City-Level Comparison</h3>
+      <p class="subtitle">Delhi vs Gwalior · weighted by orders</p>
+      <div class="chart-wrap h360"><canvas id="cityRadar"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-stats">
+    <span>📦 Dataset: <b>100 orders</b> · <b>40 riders</b> · <b>10 dark stores</b></span>
+    <span>🧮 LP solved via <b>Excel Solver + PuLP / CBC</b></span>
+    <span>📊 Charts: <b>Chart.js 4.4</b> · Map: <b>Leaflet 1.9</b></span>
+    <span>💾 Source: <b>PostgreSQL</b> (3 tables · 5 CTE queries)</span>
+  </div>
+  <div>⚡ QuickCommerce Operations Optimization · Portfolio dashboard · Built end-to-end · © 2026</div>
+</footer>
+
+<script>
+/* ========================== DATA ========================== */
+const STORES = [
+  {id:"DS001",name:"Lashkar",full:"Blinkit - Lashkar",city:"Gwalior",zone:"Central",lat:26.2183,lon:78.1828,orders:10,delayed:6,delay:60,avgMin:18.7,gmv:5440,maxCap:280,totalRiders:4,active:3,rating:4.40,payout:35.75,gmvRisk:4235,refund:635,coupon:200,floss:835,monthlyLoss:25058,oldCost:20875,newCost:600,savings:20275,monthlySaving:608250,optRiders:8,delta:5,score:46.4,opsCost:42000,costPerOrder:4211,utilization:1.2,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS002",name:"Morar",full:"Blinkit - Morar",city:"Gwalior",zone:"East",lat:26.2333,lon:78.2167,orders:10,delayed:9,delay:90,avgMin:29.6,gmv:5580,maxCap:220,totalRiders:4,active:2,rating:3.88,payout:34.25,gmvRisk:5435,refund:815,coupon:350,floss:1165,monthlyLoss:34958,oldCost:29125,newCost:600,savings:28525,monthlySaving:855750,optRiders:8,delta:6,score:28.3,opsCost:38000,costPerOrder:3807,utilization:1.5,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS003",name:"Thatipur",full:"Blinkit - Thatipur",city:"Gwalior",zone:"West",lat:26.1956,lon:78.1591,orders:10,delayed:1,delay:10,avgMin:11.7,gmv:5570,maxCap:300,totalRiders:4,active:4,rating:4.67,payout:36.50,gmvRisk:1050,refund:158,coupon:0,floss:158,monthlyLoss:4725,oldCost:3950,newCost:600,savings:3350,monthlySaving:100500,optRiders:8,delta:4,score:73.0,opsCost:45000,costPerOrder:4515,utilization:1.1,status:"AVERAGE",hstatus:"HEALTHY"},
+  {id:"DS004",name:"Hazira",full:"Blinkit - Hazira",city:"Gwalior",zone:"North",lat:26.2342,lon:78.1731,orders:10,delayed:9,delay:90,avgMin:24.1,gmv:6040,maxCap:190,totalRiders:3,active:2,rating:3.97,payout:34.00,gmvRisk:5500,refund:825,coupon:300,floss:1125,monthlyLoss:33750,oldCost:28125,newCost:600,savings:27525,monthlySaving:825750,optRiders:8,delta:6,score:28.8,opsCost:34000,costPerOrder:3407,utilization:1.8,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS005",name:"Padav",full:"Blinkit - Padav",city:"Gwalior",zone:"South",lat:26.1981,lon:78.1853,orders:10,delayed:5,delay:50,avgMin:16.5,gmv:5210,maxCap:250,totalRiders:3,active:2,rating:4.33,payout:35.00,gmvRisk:3110,refund:467,coupon:100,floss:567,monthlyLoss:16995,oldCost:14175,newCost:600,savings:13575,monthlySaving:407250,optRiders:8,delta:6,score:51.0,opsCost:40000,costPerOrder:4007,utilization:1.3,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS006",name:"Connaught Pl",full:"Blinkit - Connaught Pl",city:"Delhi",zone:"Central",lat:28.6315,lon:77.2167,orders:10,delayed:5,delay:50,avgMin:16.6,gmv:7340,maxCap:450,totalRiders:5,active:4,rating:4.66,payout:41.20,gmvRisk:4060,refund:609,coupon:150,floss:759,monthlyLoss:22770,oldCost:18975,newCost:14600,savings:4375,monthlySaving:131250,optRiders:1,delta:-3,score:53.0,opsCost:85000,costPerOrder:8517,utilization:0.7,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS007",name:"Saket",full:"Blinkit - Saket",city:"Delhi",zone:"South",lat:28.5244,lon:77.2066,orders:10,delayed:5,delay:50,avgMin:16.8,gmv:6750,maxCap:400,totalRiders:4,active:3,rating:4.45,payout:39.00,gmvRisk:4800,refund:720,coupon:100,floss:820,monthlyLoss:24600,oldCost:20500,newCost:14600,savings:5900,monthlySaving:177000,optRiders:1,delta:-2,score:51.7,opsCost:78000,costPerOrder:7812,utilization:0.8,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS008",name:"Dwarka",full:"Blinkit - Dwarka",city:"Delhi",zone:"West",lat:28.5921,lon:77.0460,orders:10,delayed:7,delay:70,avgMin:18.5,gmv:6080,maxCap:380,totalRiders:4,active:3,rating:4.33,payout:39.00,gmvRisk:5090,refund:764,coupon:200,floss:964,monthlyLoss:28905,oldCost:24100,newCost:14600,savings:9500,monthlySaving:285000,optRiders:1,delta:-2,score:41.0,opsCost:72000,costPerOrder:7212,utilization:0.9,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS009",name:"Rohini",full:"Blinkit - Rohini",city:"Delhi",zone:"North",lat:28.7041,lon:77.1025,orders:10,delayed:5,delay:50,avgMin:16.5,gmv:5880,maxCap:420,totalRiders:4,active:3,rating:4.42,payout:39.00,gmvRisk:3790,refund:569,coupon:100,floss:669,monthlyLoss:20055,oldCost:16725,newCost:8600,savings:8125,monthlySaving:243750,optRiders:4,delta:1,score:51.5,opsCost:80000,costPerOrder:8012,utilization:0.8,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"},
+  {id:"DS010",name:"Lajpat Nagar",full:"Blinkit - Lajpat Nagar",city:"Delhi",zone:"East",lat:28.5677,lon:77.2436,orders:10,delayed:7,delay:70,avgMin:18.4,gmv:6500,maxCap:350,totalRiders:5,active:4,rating:4.30,payout:38.20,gmvRisk:4460,refund:669,coupon:150,floss:819,monthlyLoss:24570,oldCost:20475,newCost:600,savings:19875,monthlySaving:596250,optRiders:8,delta:4,score:40.8,opsCost:68000,costPerOrder:6815,utilization:1.0,status:"NEEDS INTERVENTION",hstatus:"CRITICAL"}
+];
+
+// Hourly delay matrix (rows = stores in order, cols = hours 8..21)
+const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+const HOURLY = {
+  "Lashkar":      {8:0,  9:100,10:0,  11:null,12:100,13:0,  14:null,15:null,16:null,17:null,18:100,19:100,20:100,21:null},
+  "Morar":        {8:0,  9:100,10:null,11:100,12:100,13:100,14:100,15:null,16:100,17:null,18:100,19:null,20:100,21:null},
+  "Thatipur":     {8:0,  9:0,  10:0,  11:null,12:0,  13:0,  14:0,  15:null,16:0,  17:null,18:null,19:0,  20:100,21:null},
+  "Hazira":       {8:100,9:100,10:0,  11:null,12:100,13:100,14:null,15:100,16:null,17:null,18:null,19:100,20:100,21:null},
+  "Padav":        {8:0,  9:0,  10:0,  11:0,  12:null,13:100,14:100,15:null,16:100,17:null,18:null,19:100,20:100,21:null},
+  "Connaught Pl": {8:0,  9:0,  10:100,11:0,  12:100,13:0,  14:100,15:null,16:null,17:null,18:null,19:100,20:null,21:100},
+  "Saket":        {8:0,  9:50, 10:null,11:0,  12:null,13:0,  14:100,15:100,16:null,17:null,18:0,  19:null,20:100,21:100},
+  "Dwarka":       {8:50, 9:100,10:100,11:null,12:100,13:0,  14:100,15:0,  16:null,17:null,18:null,19:100,20:100,21:null},
+  "Rohini":       {8:0,  9:50, 10:null,11:100,12:null,13:100,14:0,  15:100,16:null,17:null,18:0,  19:null,20:100,21:null},
+  "Lajpat Nagar": {8:100,9:50, 10:100,11:null,12:100,13:null,14:0,  15:100,16:0,  17:null,18:null,19:100,20:100,21:null}
+};
+
+const FMT = n => "₹" + n.toLocaleString("en-IN");
+const FMTk = n => n>=10000000 ? "₹"+(n/10000000).toFixed(2)+" Cr" : n>=100000 ? "₹"+(n/100000).toFixed(2)+" L" : "₹"+n.toLocaleString("en-IN");
+
+/* ========================== TAB SWITCHER ========================== */
+function show(id, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.dispatchEvent(new Event('resize'));
+  setTimeout(()=>{ if(window._map) window._map.invalidateSize(); }, 60);
+}
+
+/* ========================== CHART DEFAULTS ========================== */
+Chart.defaults.font.family = "'Segoe UI',Tahoma,Verdana,sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = "#2C3E50";
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.register(ChartDataLabels);
+// Default — turn datalabels off; enable per-chart where useful
+Chart.defaults.plugins.datalabels = { display:false };
+
+const colorByDelay = d => d>=70 ? "#C00000" : d>=40 ? "#E67E22" : d>=20 ? "#F1C40F" : "#00B050";
+
+/* ====================== PAGE 1 CHARTS ====================== */
+
+/* ---- Map (Leaflet) ---- */
+const mapEl = document.getElementById('mapDiv');
+const map = L.map(mapEl, { zoomControl:true, scrollWheelZoom:false }).setView([27.5, 77.7], 5);
+window._map = map;
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:18, attribution:'© OpenStreetMap'
+}).addTo(map);
+const bounds = [];
+STORES.forEach(s=>{
+  const c = colorByDelay(s.delay);
+  const radius = 10 + s.delay/4;
+  const m = L.circleMarker([s.lat,s.lon],{
+    radius, color:"#fff", weight:2, fillColor:c, fillOpacity:0.85
+  }).addTo(map);
+  m.bindTooltip(`<b>${s.full}</b><br>${s.city} · ${s.zone}<br>Delay: <b>${s.delay}%</b><br>Avg: ${s.avgMin} min<br>Rating: ⭐ ${s.rating}`, {direction:"top"});
+  bounds.push([s.lat,s.lon]);
+});
+map.fitBounds(bounds, { padding:[40,40] });
+
+/* ---- Delay Rate by Store ---- */
+const sortedByDelay = [...STORES].sort((a,b)=>b.delay-a.delay);
+new Chart(document.getElementById('delayBar'),{
+  type:'bar',
+  data:{
+    labels: sortedByDelay.map(s=>s.name),
+    datasets:[{
+      label:"Delay %",
+      data: sortedByDelay.map(s=>s.delay),
+      backgroundColor: sortedByDelay.map(s=>colorByDelay(s.delay)),
+      borderRadius:5
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>c.parsed.y+"% delay rate"}},
+      datalabels:{display:true,anchor:"end",align:"top",color:"#2C3E50",font:{weight:"bold",size:10},formatter:v=>v+"%"}
+    },
+    scales:{
+      y:{beginAtZero:true,max:110,title:{display:true,text:"Delay Rate %"},grid:{color:"#EBEDEF"}},
+      x:{grid:{display:false}}
+    },
+    layout:{padding:{top:12}}
+  },
+  plugins:[{
+    id:'slaLines',
+    beforeDraw(ch){
+      const {ctx,chartArea:{left,right},scales:{y}} = ch;
+      ctx.save();
+      [{v:20,c:"#F39C12",t:"Warning 20%"},{v:40,c:"#C00000",t:"Critical 40%"}].forEach(L=>{
+        const yp=y.getPixelForValue(L.v);
+        ctx.strokeStyle=L.c; ctx.setLineDash([6,4]); ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(left,yp); ctx.lineTo(right,yp); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle=L.c; ctx.font="10px Segoe UI";
+        ctx.fillText(L.t, right-78, yp-3);
+      });
+      ctx.restore();
+    }
+  }]
+});
+
+/* ---- Avg Delivery Time ---- */
+const sortedByMin = [...STORES].sort((a,b)=>b.avgMin-a.avgMin);
+new Chart(document.getElementById('avgDelivery'),{
+  type:'bar',
+  data:{
+    labels: sortedByMin.map(s=>s.name),
+    datasets:[{
+      label:"Avg Delivery (min)",
+      data: sortedByMin.map(s=>s.avgMin),
+      backgroundColor: sortedByMin.map(s=> s.avgMin>20 ? "#C00000" : s.avgMin>15 ? "#E67E22" : "#00B050"),
+      borderRadius:5
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      datalabels:{display:true,anchor:"end",align:"top",color:"#2C3E50",font:{weight:"bold",size:10},formatter:v=>v+" m"}
+    },
+    scales:{
+      y:{beginAtZero:true,suggestedMax:35,title:{display:true,text:"Minutes"},grid:{color:"#EBEDEF"}},
+      x:{grid:{display:false}}
+    },
+    layout:{padding:{top:14}}
+  },
+  plugins:[{
+    id:'slaLine',
+    beforeDraw(ch){
+      const {ctx,chartArea:{left,right},scales:{y}} = ch;
+      const yp=y.getPixelForValue(15);
+      ctx.save();
+      ctx.strokeStyle="#C00000"; ctx.setLineDash([6,4]); ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(left,yp); ctx.lineTo(right,yp); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle="#C00000"; ctx.font="bold 10px Segoe UI";
+      ctx.fillText("SLA · 15 min", right-72, yp-4);
+      ctx.restore();
+    }
+  }]
+});
+
+/* ---- Hourly Heatmap (matrix) ---- */
+(function(){
+  const storesO = STORES.map(s=>s.name);
+  const data = [];
+  storesO.forEach((sn, ry)=>{
+    HOURS.forEach((h, rx)=>{
+      const v = HOURLY[sn] ? HOURLY[sn][h] : null;
+      data.push({x:h, y:sn, v: v===null||v===undefined ? -1 : v});
+    });
+  });
+  const ctx = document.getElementById('hourlyHeat').getContext('2d');
+  new Chart(ctx,{
+    type:'matrix',
+    data:{datasets:[{
+      label:'Delay %',
+      data,
+      backgroundColor(c){
+        const v = c.raw.v;
+        if(v<0) return "#F2F4F8";
+        if(v===0) return "#D5F5E3";
+        if(v<=25) return "#FCF3CF";
+        if(v<=50) return "#FAD7A0";
+        if(v<=75) return "#F1948A";
+        return "#C0392B";
+      },
+      borderColor:"#fff",borderWidth:1,
+      width:({chart})=> (chart.chartArea||{}).width / HOURS.length - 2,
+      height:({chart})=> (chart.chartArea||{}).height / storesO.length - 2
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title:items=>"Hour "+items[0].raw.x+":00",
+          label:i=> i.raw.v<0 ? i.raw.y+" — no orders" : i.raw.y+": "+i.raw.v+"% delay"
+        }},
+        datalabels:{display:false}
+      },
+      scales:{
+        x:{type:'linear',min:7.5,max:21.5,ticks:{stepSize:1,callback:v=>v+"h"},grid:{display:false},title:{display:true,text:"Hour of Day"}},
+        y:{type:'category',labels:storesO,offset:true,reverse:true,grid:{display:false}}
+      }
+    }
+  });
+})();
+
+/* ---- Rider Capacity ---- */
+new Chart(document.getElementById('riderCap'),{
+  type:'bar',
+  data:{
+    labels: STORES.map(s=>s.name),
+    datasets:[
+      {label:"Active Riders", data:STORES.map(s=>s.active), backgroundColor:"#1F4E78", borderRadius:4, yAxisID:'y'},
+      {label:"Total Roster",  data:STORES.map(s=>s.totalRiders), backgroundColor:"#AED6F1", borderRadius:4, yAxisID:'y'},
+      {label:"Capacity Util %", type:'line', data:STORES.map(s=>s.utilization*100), borderColor:"#E67E22", backgroundColor:"#E67E22", tension:0.3, yAxisID:'y1', pointRadius:4, fill:false}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom"}, datalabels:{display:false}},
+    scales:{
+      y:{beginAtZero:true,position:'left',title:{display:true,text:"Riders"},grid:{color:"#EBEDEF"}},
+      y1:{beginAtZero:true,position:'right',title:{display:true,text:"Utilization %"},grid:{display:false}},
+      x:{grid:{display:false}}
+    }
+  }
+});
+
+/* ---- Rider Quality vs Delay (scatter) ---- */
+new Chart(document.getElementById('qualityScatter'),{
+  type:'bubble',
+  data:{
+    datasets: STORES.map(s=>({
+      label: s.name,
+      data:[{x:s.rating, y:s.delay, r: 6 + s.orders}],
+      backgroundColor: colorByDelay(s.delay)+"CC",
+      borderColor:"#fff",borderWidth:1.5
+    }))
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:"right",labels:{boxWidth:10,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+" · ⭐"+c.raw.x+" · "+c.raw.y+"% delay"}},
+      datalabels:{display:false}
+    },
+    scales:{
+      x:{title:{display:true,text:"Avg Rider Rating ⭐"},min:3.5,max:5,grid:{color:"#EBEDEF"}},
+      y:{title:{display:true,text:"Delay Rate %"},min:0,max:100,grid:{color:"#EBEDEF"}}
+    }
+  }
+});
+
+/* ====================== PAGE 2 CHARTS ====================== */
+
+/* ---- Cost Before vs After ---- */
+const sortedBySave = [...STORES].sort((a,b)=>b.savings-a.savings);
+new Chart(document.getElementById('costBefAft'),{
+  type:'bar',
+  data:{
+    labels: sortedBySave.map(s=>s.name),
+    datasets:[
+      {label:"Before (₹)", data:sortedBySave.map(s=>s.oldCost), backgroundColor:"#C00000", borderRadius:4},
+      {label:"After LP (₹)", data:sortedBySave.map(s=>s.newCost), backgroundColor:"#00B050", borderRadius:4}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom"},
+      tooltip:{callbacks:{label:c=>c.dataset.label+": "+FMT(c.parsed.y)}},
+      datalabels:{display:false}
+    },
+    scales:{
+      y:{beginAtZero:true,title:{display:true,text:"Daily Late Cost (₹)"},ticks:{callback:v=>"₹"+(v/1000)+"k"},grid:{color:"#EBEDEF"}},
+      x:{grid:{display:false}}
+    }
+  }
+});
+
+/* ---- Rider Allocation Current vs Optimal ---- */
+new Chart(document.getElementById('riderAlloc'),{
+  type:'bar',
+  data:{
+    labels: STORES.map(s=>s.name),
+    datasets:[
+      {label:"Current Active", data:STORES.map(s=>s.active), backgroundColor:"#7F8C8D", borderRadius:4},
+      {label:"LP-Optimal",     data:STORES.map(s=>s.optRiders), backgroundColor:"#2E86C1", borderRadius:4},
+      {label:"Δ Delta", type:'line', data:STORES.map(s=>s.delta), borderColor:"#E67E22", backgroundColor:"#E67E22", tension:0.3, pointRadius:5}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom"},
+      tooltip:{callbacks:{label:c=>c.dataset.label+": "+c.parsed.y+" riders"}},
+      datalabels:{display:true,
+        formatter:(v,ctx)=> ctx.dataset.label==="Δ Delta" ? (v>0?"+":"")+v : "",
+        anchor:"end",align:"top",color:"#E67E22",font:{weight:"bold",size:11}
+      }
+    },
+    scales:{
+      y:{beginAtZero:true,title:{display:true,text:"Rider Count"},grid:{color:"#EBEDEF"}},
+      x:{grid:{display:false}}
+    }
+  }
+});
+
+/* ---- Savings Bar (horizontal) ---- */
+new Chart(document.getElementById('savingsBar'),{
+  type:'bar',
+  data:{
+    labels: sortedBySave.map(s=>s.name),
+    datasets:[{
+      label:"Daily Savings (₹)",
+      data: sortedBySave.map(s=>s.savings),
+      backgroundColor: sortedBySave.map((_,i)=>{
+        const palette=["#1E8449","#27AE60","#2ECC71","#52BE80","#7DCEA0","#A9DFBF","#D4EFDF","#E8F8F5","#85C1E9","#5DADE2"];
+        return palette[i]||"#27AE60";
+      }),
+      borderRadius:5
+    }]
+  },
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>FMT(c.parsed.x)+" / day"}},
+      datalabels:{display:true,anchor:"end",align:"end",color:"#2C3E50",font:{weight:"bold",size:10},formatter:v=>FMT(v)}
+    },
+    scales:{
+      x:{beginAtZero:true,title:{display:true,text:"Savings (₹/day)"},ticks:{callback:v=>"₹"+(v/1000)+"k"},grid:{color:"#EBEDEF"}},
+      y:{grid:{display:false}}
+    }
+  }
+});
+
+/* ---- Revenue at Risk ---- */
+const sortedByRisk = [...STORES].sort((a,b)=>b.gmvRisk-a.gmvRisk);
+new Chart(document.getElementById('revRisk'),{
+  type:'bar',
+  data:{
+    labels: sortedByRisk.map(s=>s.name),
+    datasets:[
+      {label:"Refund Risk @15% (₹)", data:sortedByRisk.map(s=>s.refund), backgroundColor:"#C0392B", borderRadius:4, stack:'a'},
+      {label:"Coupon Cost @₹50 (₹)", data:sortedByRisk.map(s=>s.coupon), backgroundColor:"#E67E22", borderRadius:4, stack:'a'},
+      {label:"GMV at Risk (₹)", type:'line', data:sortedByRisk.map(s=>s.gmvRisk), borderColor:"#1F4E78", backgroundColor:"#1F4E78", borderDash:[5,4], pointRadius:4, tension:0.2, yAxisID:'y1'}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom"},
+      tooltip:{callbacks:{label:c=>c.dataset.label+": "+FMT(c.parsed.y)}},
+      datalabels:{display:false}
+    },
+    scales:{
+      y:{beginAtZero:true,stacked:true,title:{display:true,text:"Loss (₹)"},ticks:{callback:v=>"₹"+v},grid:{color:"#EBEDEF"}},
+      y1:{beginAtZero:true,position:'right',title:{display:true,text:"GMV Exposed (₹)"},grid:{display:false},ticks:{callback:v=>"₹"+(v/1000)+"k"}},
+      x:{stacked:true,grid:{display:false}}
+    }
+  }
+});
+
+/* ---- Savings Table ---- */
+(function(){
+  const max = Math.max(...STORES.map(s=>s.savings));
+  const rows = [...STORES].sort((a,b)=>b.savings-a.savings).map(s=>{
+    const w = (s.savings/max*100).toFixed(1);
+    return `<tr>
+      <td><b>${s.id}</b><br><span style="color:#7F8C8D;font-size:11px">${s.name}, ${s.city}</span></td>
+      <td><div class="bar-container"><div class="bar-fill" style="width:${w}%"></div></div></td>
+      <td style="text-align:right;font-weight:700;color:#1E8449">${FMT(s.savings)}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById('savingsTbl').innerHTML = rows;
+})();
+
+/* ====================== PAGE 3 CHARTS & TABLE ====================== */
+
+/* ---- Ops Score ---- */
+const sortedByScore = [...STORES].sort((a,b)=>b.score-a.score);
+new Chart(document.getElementById('opsScore'),{
+  type:'bar',
+  data:{
+    labels: sortedByScore.map(s=>s.name),
+    datasets:[{
+      label:"Ops Score (0–100)",
+      data: sortedByScore.map(s=>s.score),
+      backgroundColor: sortedByScore.map(s=> s.score>=70?"#00B050": s.score>=50?"#F1C40F": s.score>=40?"#E67E22":"#C00000"),
+      borderRadius:5
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      datalabels:{display:true,anchor:"end",align:"top",color:"#2C3E50",font:{weight:"bold",size:10},formatter:v=>v.toFixed(1)}
+    },
+    scales:{
+      y:{beginAtZero:true,max:110,title:{display:true,text:"Composite Score"},grid:{color:"#EBEDEF"}},
+      x:{grid:{display:false}}
+    },
+    layout:{padding:{top:10}}
+  },
+  plugins:[{
+    id:'bench',beforeDraw(ch){
+      const {ctx,chartArea:{left,right},scales:{y}}=ch;
+      const yp=y.getPixelForValue(70);
+      ctx.save();ctx.strokeStyle="#00B050";ctx.setLineDash([5,4]);ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();
+      ctx.fillStyle="#00B050";ctx.font="bold 10px Segoe UI";ctx.fillText("Target ≥ 70",right-72,yp-4);
+      ctx.restore();
+    }
+  }]
+});
+
+/* ---- Cost per Order ---- */
+const sortedByCPO = [...STORES].sort((a,b)=>b.costPerOrder-a.costPerOrder);
+new Chart(document.getElementById('costPerOrder'),{
+  type:'bar',
+  data:{
+    labels: sortedByCPO.map(s=>s.name),
+    datasets:[{
+      label:"Cost / Order (₹)",
+      data: sortedByCPO.map(s=>s.costPerOrder),
+      backgroundColor: sortedByCPO.map(s=> s.costPerOrder>7000?"#C00000": s.costPerOrder>5000?"#E67E22":"#00B050"),
+      borderRadius:5
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>FMT(c.parsed.y)+" per order"}},
+      datalabels:{display:true,anchor:"end",align:"top",color:"#2C3E50",font:{weight:"bold",size:10},formatter:v=>"₹"+(v/1000).toFixed(1)+"k"}
+    },
+    scales:{
+      y:{beginAtZero:true,title:{display:true,text:"₹ per Order"},ticks:{callback:v=>"₹"+(v/1000)+"k"},grid:{color:"#EBEDEF"}},
+      x:{grid:{display:false}}
+    }
+  },
+  plugins:[{
+    id:'target',beforeDraw(ch){
+      const {ctx,chartArea:{left,right},scales:{y}}=ch;
+      const yp=y.getPixelForValue(5000);
+      ctx.save();ctx.strokeStyle="#00B050";ctx.setLineDash([5,4]);ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();
+      ctx.fillStyle="#00B050";ctx.font="bold 10px Segoe UI";ctx.fillText("Target ≤ ₹5k",right-78,yp-4);
+      ctx.restore();
+    }
+  }]
+});
+
+/* ---- Capacity Utilization vs Delay ---- */
+new Chart(document.getElementById('capDelay'),{
+  type:'bubble',
+  data:{
+    datasets: STORES.map(s=>({
+      label: s.name,
+      data:[{x:s.utilization*100, y:s.delay, r: 6 + s.maxCap/40}],
+      backgroundColor: colorByDelay(s.delay)+"BB",
+      borderColor:"#fff",borderWidth:1.5
+    }))
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:"right",labels:{boxWidth:10,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+" · Util "+c.raw.x.toFixed(0)+"% · Delay "+c.raw.y+"%"}},
+      datalabels:{display:false}
+    },
+    scales:{
+      x:{title:{display:true,text:"Capacity Utilization %"},min:0,max:200,grid:{color:"#EBEDEF"}},
+      y:{title:{display:true,text:"Delay Rate %"},min:0,max:100,grid:{color:"#EBEDEF"}}
+    }
+  }
+});
+
+/* ---- City Radar ---- */
+(function(){
+  const delhi = STORES.filter(s=>s.city==="Delhi");
+  const gw    = STORES.filter(s=>s.city==="Gwalior");
+  const avg = (arr,k)=> arr.reduce((a,s)=>a+s[k],0)/arr.length;
+  const norm = (v,mx)=> Math.max(0,Math.min(100, (v/mx)*100));
+  const dD = [
+    100 - avg(delhi,"delay"),                   // on-time %
+    avg(delhi,"rating")*20,                     // rating /5 → /100
+    100 - norm(avg(delhi,"costPerOrder"),10000),// cost efficiency
+    avg(delhi,"score"),                         // ops score
+    Math.min(100, avg(delhi,"utilization")*100) // capacity used
+  ];
+  const dG = [
+    100 - avg(gw,"delay"),
+    avg(gw,"rating")*20,
+    100 - norm(avg(gw,"costPerOrder"),10000),
+    avg(gw,"score"),
+    Math.min(100, avg(gw,"utilization")*100)
+  ];
+  new Chart(document.getElementById('cityRadar'),{
+    type:'radar',
+    data:{
+      labels:["On-Time %","Rider Rating","Cost Efficiency","Ops Score","Capacity Used"],
+      datasets:[
+        {label:"Delhi",  data:dD, backgroundColor:"rgba(46,134,193,0.25)", borderColor:"#1F4E78", pointBackgroundColor:"#1F4E78", borderWidth:2},
+        {label:"Gwalior",data:dG, backgroundColor:"rgba(230,126,34,0.25)", borderColor:"#C0392B", pointBackgroundColor:"#C0392B", borderWidth:2}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:"bottom"},datalabels:{display:false}},
+      scales:{r:{min:0,max:100,ticks:{stepSize:25,backdropColor:"rgba(0,0,0,0)"},grid:{color:"#E5E8E8"},angleLines:{color:"#E5E8E8"}}}
+    }
+  });
+})();
+
+/* ---- Full Scorecard Table ---- */
+(function(){
+  const rows = [...STORES].sort((a,b)=>b.score-a.score).map(s=>{
+    const dCls = s.delay>=70 ? "status-critical" : s.delay>=40 ? "status-warning" : "status-healthy";
+    const stCls = s.status==="AVERAGE" ? "status-avg" : "status-critical";
+    const ratingStars = "⭐".repeat(Math.round(s.rating));
+    return `<tr>
+      <td><b>${s.id}</b><br>${s.full}</td>
+      <td>${s.city} · ${s.zone}</td>
+      <td style="text-align:center">${s.orders}</td>
+      <td class="${dCls}">${s.delay.toFixed(1)}%</td>
+      <td>${s.avgMin}</td>
+      <td>${s.active} / ${s.totalRiders}</td>
+      <td>${(s.utilization*100).toFixed(0)}%</td>
+      <td>${FMT(s.costPerOrder)}</td>
+      <td>${s.rating.toFixed(2)}</td>
+      <td><b>${s.score.toFixed(1)}</b></td>
+      <td class="${stCls}">${s.status}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById('scorecardTbl').innerHTML = rows;
+})();
+</script>
+</body>
+</html>

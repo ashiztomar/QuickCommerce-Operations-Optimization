@@ -1,0 +1,11 @@
+store_id,store_name,city,zone,max_capacity,operational_cost,total_orders,delayed_orders,delay_rate_pct,avg_delivery_min,total_gmv,total_riders,active_riders,rider_payout_cost,avg_rating,capacity_utilization_pct,cost_per_order_inr,ops_performance_score,city_rank_by_punctuality,store_classification
+DS003,Blinkit - Thatipur,Gwalior,West,300,45000,10,1,10.0,11.7,5570.0,4,4,146.0,4.67,1.1,4515.0,73.0,1,AVERAGE
+DS006,Blinkit - Connaught Pl,Delhi,Central,450,85000,10,5,50.0,16.6,7340.0,5,4,166.0,4.66,0.7,8517.0,53.0,1,NEEDS INTERVENTION
+DS007,Blinkit - Saket,Delhi,South,400,78000,10,5,50.0,16.8,6750.0,4,3,118.0,4.45,0.8,7812.0,51.7,1,NEEDS INTERVENTION
+DS009,Blinkit - Rohini,Delhi,North,420,80000,10,5,50.0,16.5,5880.0,4,3,118.0,4.42,0.8,8012.0,51.5,1,NEEDS INTERVENTION
+DS005,Blinkit - Padav,Gwalior,South,250,40000,10,5,50.0,16.5,5210.0,3,2,70.0,4.33,1.3,4007.0,51.0,2,NEEDS INTERVENTION
+DS001,Blinkit - Lashkar,Gwalior,Central,280,42000,10,6,60.0,18.7,5440.0,4,3,108.0,4.4,1.2,4211.0,46.4,3,NEEDS INTERVENTION
+DS008,Blinkit - Dwarka,Delhi,West,380,72000,10,7,70.0,18.5,6080.0,4,3,118.0,4.33,0.9,7212.0,41.0,4,NEEDS INTERVENTION
+DS010,Blinkit - Lajpat Nagar,Delhi,East,350,68000,10,7,70.0,18.4,6500.0,5,4,153.0,4.3,1.0,6815.0,40.8,4,NEEDS INTERVENTION
+DS004,Blinkit - Hazira,Gwalior,North,190,34000,10,9,90.0,24.1,6040.0,3,2,67.0,3.97,1.8,3407.0,28.8,4,NEEDS INTERVENTION
+DS002,Blinkit - Morar,Gwalior,East,220,38000,10,9,90.0,29.6,5580.0,4,2,67.0,3.88,1.5,3807.0,28.3,4,NEEDS INTERVENTION
